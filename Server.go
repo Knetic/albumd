@@ -152,12 +152,13 @@ func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Server) serveThumb(w http.ResponseWriter, r *http.Request) {
-	thumbPath := "." + r.URL.Path
+	thumbPath := fmt.Sprintf("%s/%s", this.ThumbPath, r.URL.Path[len("/thumbs/"):])
 	http.ServeFile(w, r, thumbPath)
 }
 
 func (this *Server) serveOriginal(w http.ResponseWriter, r *http.Request) {
-	originalPath := r.URL.Path[len("/original/"):]
+	requestedPath := r.URL.Path[len("/original/"):]
+	originalPath := fmt.Sprintf("%s/%s", this.AlbumPath, requestedPath)
 	http.ServeFile(w, r, originalPath)
 }
 
@@ -197,7 +198,7 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 
 		servableImages = append(servableImages, servableImage{
 			ThumbPath:    thumbPath,
-			OriginalPath: fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, item.Name()),
+			OriginalPath: fmt.Sprintf("%s/%s", albumName, item.Name()),
 			Description:  description,
 		})
 	}
