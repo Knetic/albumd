@@ -152,14 +152,41 @@ func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Server) serveThumb(w http.ResponseWriter, r *http.Request) {
-	thumbPath := fmt.Sprintf("%s/%s", this.ThumbPath, r.URL.Path[len("/thumbs/"):])
+	requestedPath := r.URL.Path[len("/thumbs/"):]
+	hashedAlbumName := requestedPath[:strings.Index(requestedPath, "/")]
+	imageName := requestedPath[strings.Index(requestedPath, "/")+1:]
+
+	albumName, err, found := this.findHashedAlbumName(hashedAlbumName)
+	if err != nil {
+		http.Error(w, "Thumb not findable", http.StatusInternalServerError)
+		return
+	}
+	if !found {
+		http.Error(w, "Album not found", http.StatusNotFound)
+		return
+	}
+
+	thumbPath := fmt.Sprintf("%s/%s/%s.png", this.ThumbPath, albumName, imageName)
 	http.ServeFile(w, r, thumbPath)
 }
 
 func (this *Server) serveOriginal(w http.ResponseWriter, r *http.Request) {
 	requestedPath := r.URL.Path[len("/original/"):]
-	originalPath := fmt.Sprintf("%s/%s", this.AlbumPath, requestedPath)
-	http.ServeFile(w, r, originalPath)
+	hashedAlbumName := requestedPath[:strings.Index(requestedPath, "/")]
+	imageName := requestedPath[strings.Index(requestedPath, "/")+1:]
+
+	albumName, err, found := this.findHashedAlbumName(hashedAlbumName)
+	if err != nil {
+		http.Error(w, "Original not findable", http.StatusInternalServerError)
+		return
+	}
+	if !found {
+		http.Error(w, "Album not found", http.StatusNotFound)
+		return
+	}
+
+	imagePath := fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, imageName)
+	http.ServeFile(w, r, imagePath)
 }
 
 // Finds/creates thumbs for every image in the given albumName.
@@ -167,6 +194,12 @@ func (this *Server) serveOriginal(w http.ResponseWriter, r *http.Request) {
 func (this *Server) findServableImages(albumName string) ([]servableImage, error) {
 
 	var servableImages []servableImage
+
+	hashedAlbumName, err := this.hashAlbumName(albumName)
+	if err != nil {
+		msg := fmt.Sprintf("Error hashing album name: %v", err)
+		return servableImages, errors.New(msg)
+	}
 
 	albumItems, err := os.ReadDir(fmt.Sprintf("%s/%s", this.AlbumPath, albumName))
 	if err != nil {
@@ -182,7 +215,7 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 			continue
 		}
 
-		thumbPath, err := this.thumbnailer.RequestThumbnail(albumName, item.Name())
+		_, err := this.thumbnailer.RequestThumbnail(albumName, item.Name())
 		if err != nil {
 			msg := fmt.Sprintf("Error creating thumbnail: %v", err)
 			return servableImages, errors.New(msg)
@@ -197,8 +230,8 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 		}
 
 		servableImages = append(servableImages, servableImage{
-			ThumbPath:    thumbPath,
-			OriginalPath: fmt.Sprintf("%s/%s", albumName, item.Name()),
+			ThumbPath:    fmt.Sprintf("%s/%s", hashedAlbumName, item.Name()),
+			OriginalPath: fmt.Sprintf("%s/%s", hashedAlbumName, item.Name()),
 			Description:  description,
 		})
 	}
@@ -268,7 +301,7 @@ func (this *Server) findHashedAlbumName(incoming string) (string, error, bool) {
 
 		hashed, err := this.hashAlbumName(e.Name())
 		if err != nil {
-			continue
+			return "", err, false
 		}
 
 		if incoming == hashed {

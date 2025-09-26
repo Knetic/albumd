@@ -118,8 +118,6 @@ func (this thumbnailer) createThumbnail(albumName string, imageName string) (str
 		return "", errors.New(msg)
 	}
 
-	fmt.Printf("Created thumbnail: %s\n", thumbPath)
-
 	return thumbPath, nil
 }
 
