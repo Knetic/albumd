@@ -3,6 +3,7 @@ package main
 import (
 	"albumd"
 	"flag"
+	"os"
 )
 
 func main() {
@@ -34,8 +35,10 @@ func parseSettings() RunSettings {
 	flag.StringVar(&ret.AlbumPath, "path", "./albums", "Path to the album directory")
 	flag.StringVar(&ret.ThumbPath, "thumbs", "thumbs", "Path to the thumbnail directory")
 	flag.StringVar(&ret.Salt, "salt", "aaa", "Salt used for hashing album names")
-	flag.StringVar(&ret.AdminUsername, "username", "a", "Admin username")
-	flag.StringVar(&ret.AdminPassword, "password", "p", "Admin password")
+
+	ret.AdminUsername = os.Getenv("ALBUMD_USERNAME")
+	ret.AdminPassword = os.Getenv("ALBUMD_PASSWORD")
+	ret.Salt = os.Getenv("ALBUMD_SALT")
 
 	flag.Parse()
 	return ret

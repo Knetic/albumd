@@ -1,9 +1,5 @@
 all: containerized_build
 
-export GOPATH=$(CURDIR)/
-export GOBIN=$(CURDIR)/.temp/bin
-export GOCACHE=$(CURDIR)/.temp/cache
-
 build: clean fmt
 	@mkdir -p .bin
 	@mkdir -p .temp/bin
