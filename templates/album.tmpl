@@ -10,6 +10,12 @@
             <span>{{ .Content.AlbumName }}</span>
         </header>
 		
-		
+        <ul>
+		{{ range .Content.Thumbs }}
+            <li>
+                <img src="/{{ . }}" />
+            </li>
+        {{ end }}
+        </ul>
     </body>
 </html>

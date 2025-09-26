@@ -30,75 +30,12 @@ header a span
     font-style: inherit;
 }
 
-subheader
-{
-    font-size: 3vh;
-    margin-bottom: 4vh;
-}
-
-navbar
-{
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    font-style: normal;
-    font-weight: normal;
-    font-size: 3vh;
-
-    margin-top: 2vh;
-    margin-bottom: 10vh;
-
-    font-family: Futura, Helvetica, sans-serif;
-    color: #777777;
-}
-
-navbar a
-{
-    color: #777777;
-}
-navbar span
-{
-    color: #777777;
-}
-
 center
 {
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-downloads
-{
-    margin-bottom: 5vh;
-}
-
-downloads ul li
-{
-    margin-bottom: 1em;
-}
-
-downloads ul li span
-{
-    border: 1px solid #AAAAAA;
-    background-color: #EEEEEE;
-    font-family: monospace, sans-serif;
-    color: #ff4800;
-    font-size: 1.5vh;
-
-    display: block;
-    padding: .5em;
-    margin-bottom: .5em;
-}
-
-downloads ul li a
-{
-    font-size: 2vh;
-    color: #777777;
-    margin-right: 10vh;
 }
 
 button
@@ -126,16 +63,6 @@ select
     align-items: center;
     justify-content: left;
 }
-
-#runlog
-{
-    width: 650px;
-
-    margin-top: 30px;
-    border: 1px solid #CCCCCC;
-
-    text-align: left;
-}
 /* ref: https://stackoverflow.com/a/56704079 */
 [contenteditable][placeholder]:empty:before 
 {
@@ -145,7 +72,25 @@ select
     background-color: transparent;
 }
 
-#classification
-{
-    margin-right: 10vw;
+/* Style for the unordered list */
+ul {
+    list-style: none; /* Remove default bullets */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+    display: flex; /* Use flexbox for layout */
+    flex-wrap: wrap; /* Allow items to wrap to next line */
+    gap: 10px; /* Space between images */
+}
+
+/* Style for each list item */
+li {
+    flex: 0 0 calc(20% - 8px); /* 20% width for 5 items per row, adjusted for gap */
+    box-sizing: border-box; /* Include padding/border in width */
+}
+
+/* Style for images */
+ul li img {
+    width: 100%; /* Make image fill the list item */
+    height: auto; /* Maintain aspect ratio */
+    display: block; /* Remove extra space below image */
 }
