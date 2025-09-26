@@ -3,6 +3,7 @@ package albumd
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -61,11 +62,12 @@ func (this *Server) serveAlbum(w http.ResponseWriter, r *http.Request) {
 	// find the actual album name
 	albumName, err, ok := this.findHashedAlbumName(incoming)
 	if err != nil {
-		http.Error(w, "Error finding album", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error finding album: %v", err), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
 		http.Error(w, "Album not found", http.StatusNotFound)
+		return
 	}
 
 	var templateReq albumRenderRequest
@@ -82,7 +84,7 @@ func (this *Server) serveAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *Server) serveFind(w http.ResponseWriter, r *http.Request) {
-	incoming := r.URL.Path[len("/a/"):]
+	incoming := r.URL.Path[len("/find/"):]
 	if incoming == "" {
 		http.Error(w, "No album name given", http.StatusBadRequest)
 		return
@@ -140,12 +142,7 @@ func (this *Server) findHashedAlbumName(incoming string) (string, error, bool) {
 
 	// not in cache, so brute search every album.
 	// find every directory under AlbumPath
-	entries, err := os.ReadDir("./")
-	if err != nil {
-		return "", err, false
-	}
-
-	incomingB64, err := base64.RawURLEncoding.DecodeString(incoming)
+	entries, err := os.ReadDir(this.AlbumPath)
 	if err != nil {
 		return "", err, false
 	}
@@ -160,7 +157,7 @@ func (this *Server) findHashedAlbumName(incoming string) (string, error, bool) {
 			continue
 		}
 
-		if string(incomingB64) == hashed {
+		if incoming == hashed {
 			// cache it
 			this.albumHashes[incoming] = e.Name()
 			return e.Name(), nil, true
@@ -170,7 +167,7 @@ func (this *Server) findHashedAlbumName(incoming string) (string, error, bool) {
 	return "", nil, false
 }
 
-// returns a hashed album name for the given actual name.
+// returns a hashed+base64 album name for the given actual name.
 func (this Server) hashAlbumName(name string) (string, error) {
 
 	hashed, err := scrypt.Key([]byte(name), this.Salt, 16384, 8, 1, 32)

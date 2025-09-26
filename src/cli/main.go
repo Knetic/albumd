@@ -29,7 +29,7 @@ type RunSettings struct {
 func parseSettings() RunSettings {
 	var ret RunSettings
 
-	flag.StringVar(&ret.AlbumPath, "path", ".", "Path to the album directory")
+	flag.StringVar(&ret.AlbumPath, "path", "./albums", "Path to the album directory")
 	flag.StringVar(&ret.Salt, "salt", "aaa", "Salt used for hashing album names")
 	flag.StringVar(&ret.AdminUsername, "username", "a", "Admin username")
 	flag.StringVar(&ret.AdminPassword, "password", "p", "Admin password")
