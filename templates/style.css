@@ -75,11 +75,11 @@ select
 /* Style for the unordered list */
 ul {
     list-style: none; /* Remove default bullets */
-    padding: 0; /* Remove default padding */
-    margin: 0; /* Remove default margin */
-    display: flex; /* Use flexbox for layout */
-    flex-wrap: wrap; /* Allow items to wrap to next line */
-    gap: 10px; /* Space between images */
+    padding: 0; 
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px; /* Space between images */
 }
 
 /* Style for each list item */
@@ -90,7 +90,7 @@ li {
 
 /* Style for images */
 ul li img {
-    width: 100%; /* Make image fill the list item */
-    height: auto; /* Maintain aspect ratio */
+    max-width: 160;
+    max-height: 160;
     display: block; /* Remove extra space below image */
 }

@@ -11,9 +11,11 @@
         </header>
 		
         <ul>
-		{{ range .Content.Thumbs }}
+		{{ range .Content.ServableImages }}
             <li>
-                <img src="/{{ . }}" />
+                <a href="/original/{{ .OriginalPath }}" target="_blank" rel="noopener noreferrer">
+                    <img src="/{{ .ThumbPath }}" />
+                </a>
             </li>
         {{ end }}
         </ul>

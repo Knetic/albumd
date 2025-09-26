@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"image"
 	_ "image/jpeg" // for image.Decode
 	"image/png"
 	_ "image/png" // for image.Decode
@@ -13,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/disintegration/imageorient"
 	"github.com/nfnt/resize"
 	"golang.org/x/crypto/scrypt"
 )
@@ -30,8 +30,13 @@ type Server struct {
 }
 
 type albumRenderRequest struct {
-	AlbumName string
-	Thumbs    []string
+	AlbumName      string
+	ServableImages []servableImage
+}
+
+type servableImage struct {
+	ThumbPath    string
+	OriginalPath string
 }
 
 func (this *Server) Run() {
@@ -95,7 +100,7 @@ func (this *Server) serveAlbum(w http.ResponseWriter, r *http.Request) {
 
 	templateReq.AlbumName = albumName
 
-	templateReq.Thumbs, err = this.findThumbsFor(albumName)
+	templateReq.ServableImages, err = this.findServableImages(albumName)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error finding/creating thumbnails: %v", err), http.StatusInternalServerError)
 		return
@@ -144,14 +149,14 @@ func (this *Server) serveOriginal(w http.ResponseWriter, r *http.Request) {
 
 // Finds/creates thumbs for every image in the given albumName.
 // returns a list of paths to the thumbnails.
-func (this *Server) findThumbsFor(albumName string) ([]string, error) {
+func (this *Server) findServableImages(albumName string) ([]servableImage, error) {
 
-	var thumbs []string
+	var servableImages []servableImage
 
 	albumItems, err := os.ReadDir(fmt.Sprintf("%s/%s", this.AlbumPath, albumName))
 	if err != nil {
 		msg := fmt.Sprintf("Error reading album directory: %v", err)
-		return thumbs, errors.New(msg)
+		return servableImages, errors.New(msg)
 	}
 
 	for _, item := range albumItems {
@@ -169,13 +174,16 @@ func (this *Server) findThumbsFor(albumName string) ([]string, error) {
 		if os.IsNotExist(err) {
 			_, err := this.createThumbnail(albumName, item.Name())
 			if err != nil {
-				return thumbs, err
+				return servableImages, err
 			}
 		}
-		thumbs = append(thumbs, thumbPath)
+		servableImages = append(servableImages, servableImage{
+			ThumbPath:    thumbPath,
+			OriginalPath: fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, item.Name()),
+		})
 	}
 
-	return thumbs, nil
+	return servableImages, nil
 }
 
 func (this Server) createThumbnail(albumName string, imageName string) (string, error) {
@@ -198,7 +206,7 @@ func (this Server) createThumbnail(albumName string, imageName string) (string, 
 	}
 	defer originalImageF.Close()
 
-	originalImage, _, err := image.Decode(originalImageF)
+	originalImage, _, err := imageorient.Decode(originalImageF)
 	if err != nil {
 		msg := fmt.Sprintf("Error decoding image for resizing: %v (%s)", err, originalImagePath)
 		return "", errors.New(msg)

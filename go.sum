@@ -1,3 +1,7 @@
+github.com/disintegration/gift v1.1.2 h1:9ZyHJr+kPamiH10FX3Pynt1AxFUob812bU9Wt4GMzhs=
+github.com/disintegration/gift v1.1.2/go.mod h1:Jh2i7f7Q2BM7Ezno3PhfezbR1xpUg9dUg3/RlKGr4HI=
+github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec h1:YrB6aVr9touOt75I9O1SiancmR2GMg45U9UYf0gtgWg=
+github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec/go.mod h1:K0KBFIr1gWu/C1Gp10nFAcAE4hsB7JxE6OgLijrJ8Sk=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6Oo2LfFZAehjjQMERAvZLEDnQ=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 golang.org/x/crypto v0.42.0 h1:chiH31gIWm57EkTXpwnqf8qeuMUi0yekh6mT2AvFlqI=
