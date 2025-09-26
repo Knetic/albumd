@@ -2,15 +2,12 @@ all: containerized_build
 
 build: clean fmt
 	@mkdir -p .bin
-	@mkdir -p .temp/bin
-	@mkdir -p .temp/cache
 
 	@go get ./...
-	@go build -o .bin/albumd .
+	@go build -o albumd.exe ./src/cli/*.go
 
 clean:
 	@rm -rf .bin
-	@rm -rf .temp
 
 fmt:
 	@go fmt .

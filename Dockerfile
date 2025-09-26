@@ -7,4 +7,4 @@ WORKDIR /usr/share/albumd
 
 COPY ./.bin/albumd /usr/local/bin/albumd
 
-CMD ["/usr/local/bin/albumd", "-p", "/usr/share/albumd"]
+CMD ["/usr/local/bin/albumd"]
