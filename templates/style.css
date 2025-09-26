@@ -73,7 +73,7 @@ ul {
 /* Style for each list item */
 li {
     width: 100%;
-    flex: 0 0 calc(10%); /* 10% width for 10 items per row*/
+    flex: 0 0 calc(5cm); 
     box-sizing: border-box; /* Include padding/border in width */
     aspect-ratio: 1 / 1; /* Force square thumbnails */
     overflow: hidden; 
