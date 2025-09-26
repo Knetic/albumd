@@ -4,7 +4,7 @@ build: clean fmt
 	@mkdir -p .bin
 
 	@go get ./...
-	@go build -o albumd.exe ./src/cli/*.go
+	@go build -o .bin/albumd ./src/cli/*.go
 
 clean:
 	@rm -rf .bin
