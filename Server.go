@@ -101,12 +101,16 @@ func (this *Server) serveAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templateReq.AlbumName = albumName
-
 	templateReq.ServableImages, err = this.findServableImages(albumName)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error finding/creating thumbnails: %v", err), http.StatusInternalServerError)
 		return
+	}
+
+	// find the desired plaintext name of the album
+	nameBytes, err := os.ReadFile(fmt.Sprintf("%s/%s/.name", this.AlbumPath, albumName))
+	if err == nil {
+		templateReq.AlbumName = string(nameBytes)
 	}
 
 	// render
