@@ -50,19 +50,6 @@ select
     font-size: 1.5vh;
 }
 
-#searchbar
-{
-    width: 60vw;
-    height: 4vh;
-    font-size: 2vh;
-    border: 1px solid #CCCCCC;
-    background-color: #FFFFFF;
-    resize: none;
-
-    display: flex;
-    align-items: center;
-    justify-content: left;
-}
 /* ref: https://stackoverflow.com/a/56704079 */
 [contenteditable][placeholder]:empty:before 
 {
@@ -79,18 +66,23 @@ ul {
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 3px; /* Space between images */
+    gap: 1px; /* Space between images */
 }
 
 /* Style for each list item */
 li {
-    flex: 0 0 calc(20% - 8px); /* 20% width for 5 items per row, adjusted for gap */
+    width: 100%;
+    flex: 0 0 calc(10%); /* 10% width for 10 items per row*/
     box-sizing: border-box; /* Include padding/border in width */
+    aspect-ratio: 1 / 1; /* Force square thumbnails */
+    overflow: hidden; 
 }
 
 /* Style for images */
 ul li img {
-    max-width: 160;
-    max-height: 160;
-    display: block; /* Remove extra space below image */
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-position: center;
+    object-fit: contain;
 }
