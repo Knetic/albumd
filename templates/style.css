@@ -1,0 +1,151 @@
+body
+{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 10pt;
+    font-family: "sans-serif";
+    background-color: #f9f9f9;
+}
+
+header
+{
+    font-size: 6vh;
+    font-weight: bold;
+    text-align: center;
+    font-family: Futura, Helvetica, sans-serif;
+
+    margin-top: 6vh;
+}
+
+header a
+{
+    color: #777777;
+    font-style: none;
+    text-decoration: none;
+}
+header a span
+{
+    font-style: inherit;
+}
+
+subheader
+{
+    font-size: 3vh;
+    margin-bottom: 4vh;
+}
+
+navbar
+{
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    font-style: normal;
+    font-weight: normal;
+    font-size: 3vh;
+
+    margin-top: 2vh;
+    margin-bottom: 10vh;
+
+    font-family: Futura, Helvetica, sans-serif;
+    color: #777777;
+}
+
+navbar a
+{
+    color: #777777;
+}
+navbar span
+{
+    color: #777777;
+}
+
+center
+{
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+downloads
+{
+    margin-bottom: 5vh;
+}
+
+downloads ul li
+{
+    margin-bottom: 1em;
+}
+
+downloads ul li span
+{
+    border: 1px solid #AAAAAA;
+    background-color: #EEEEEE;
+    font-family: monospace, sans-serif;
+    color: #ff4800;
+    font-size: 1.5vh;
+
+    display: block;
+    padding: .5em;
+    margin-bottom: .5em;
+}
+
+downloads ul li a
+{
+    font-size: 2vh;
+    color: #777777;
+    margin-right: 10vh;
+}
+
+button
+{
+    height: 2em;
+    font-size: 1.5vh;
+}
+
+select
+{
+    height: 2em;
+    font-size: 1.5vh;
+}
+
+#searchbar
+{
+    width: 60vw;
+    height: 4vh;
+    font-size: 2vh;
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    resize: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: left;
+}
+
+#runlog
+{
+    width: 650px;
+
+    margin-top: 30px;
+    border: 1px solid #CCCCCC;
+
+    text-align: left;
+}
+/* ref: https://stackoverflow.com/a/56704079 */
+[contenteditable][placeholder]:empty:before 
+{
+    content: attr(placeholder);
+    position: absolute;
+    color: gray;
+    background-color: transparent;
+}
+
+#classification
+{
+    margin-right: 10vw;
+}
