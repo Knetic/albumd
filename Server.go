@@ -1,19 +1,15 @@
 package albumd
 
 import (
-	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	_ "image/jpeg" // for image.Decode
-	"image/png"
-	_ "image/png" // for image.Decode
+	_ "image/png"  // for image.Decode
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/disintegration/imageorient"
-	"github.com/nfnt/resize"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -27,6 +23,8 @@ type Server struct {
 	// cache of hashed album names to actual album names
 	albumHashes  map[string]string
 	templateChan chan *templateRequest
+
+	thumbnailer *thumbnailer
 }
 
 type albumRenderRequest struct {
@@ -44,6 +42,9 @@ func (this *Server) Run() {
 
 	this.albumHashes = make(map[string]string)
 	this.templateChan = make(chan *templateRequest)
+
+	this.thumbnailer = newThumbnailer(this.AlbumPath, this.ThumbPath)
+	go this.thumbnailer.Run()
 
 	go runTemplater("./templates", this.templateChan)
 
@@ -136,8 +137,9 @@ func (this *Server) serveFind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(albumName))
+	http.Redirect(w, r, fmt.Sprintf("/a/%s", albumName), http.StatusSeeOther)
 }
+
 func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
 
 	incoming := r.URL.Path[len("/direct/"):]
@@ -179,15 +181,10 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 			continue
 		}
 
-		thumbPath := this.deriveThumbPath(albumName, item.Name())
-
-		// thumb path exists?
-		_, err := os.Stat(thumbPath)
-		if os.IsNotExist(err) {
-			_, err := this.createThumbnail(albumName, item.Name())
-			if err != nil {
-				return servableImages, err
-			}
+		thumbPath, err := this.thumbnailer.RequestThumbnail(albumName, item.Name())
+		if err != nil {
+			msg := fmt.Sprintf("Error creating thumbnail: %v", err)
+			return servableImages, errors.New(msg)
 		}
 
 		// if there's a .txt file with the same name, read it for description
@@ -208,62 +205,11 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 	return servableImages, nil
 }
 
-func (this Server) createThumbnail(albumName string, imageName string) (string, error) {
-
-	// create dir for album, if needed
-	err := os.MkdirAll(fmt.Sprintf("%s/%s", this.ThumbPath, albumName), 0755)
-	if err != nil {
-		msg := fmt.Sprintf("Error creating thumbnail directory: %v", err)
-		return "", errors.New(msg)
-	}
-
-	// resize thumbnail
-	thumbPath := this.deriveThumbPath(albumName, imageName)
-	originalImagePath := fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, imageName)
-
-	originalImageF, err := os.Open(originalImagePath)
-	if err != nil {
-		msg := fmt.Sprintf("Error reading image file for resizing: %v", err)
-		return "", errors.New(msg)
-	}
-	defer originalImageF.Close()
-
-	originalImage, _, err := imageorient.Decode(originalImageF)
-	if err != nil {
-		msg := fmt.Sprintf("Error decoding image for resizing: %v (%s)", err, originalImagePath)
-		return "", errors.New(msg)
-	}
-
-	newImage := resize.Resize(160, 0, originalImage, resize.Lanczos3)
-
-	// write out
-	var thumbBuffer bytes.Buffer
-	err = png.Encode(&thumbBuffer, newImage)
-	if err != nil {
-		msg := fmt.Sprintf("Error encoding thumbnail image: %v", err)
-		return "", errors.New(msg)
-	}
-
-	err = os.WriteFile(thumbPath, thumbBuffer.Bytes(), 0644)
-	if err != nil {
-		msg := fmt.Sprintf("Error writing thumbnail image: %v", err)
-		return "", errors.New(msg)
-	}
-
-	fmt.Printf("Created thumbnail: %s\n", thumbPath)
-
-	return thumbPath, nil
-}
-
 func (this Server) isImageFile(name string) bool {
 	name = strings.ToLower(name)
 	return strings.HasSuffix(name, ".jpg") ||
 		strings.HasSuffix(name, ".jpeg") ||
 		strings.HasSuffix(name, ".png")
-}
-
-func (this Server) deriveThumbPath(albumName string, imageName string) string {
-	return fmt.Sprintf("%s/%s/%s.png", this.ThumbPath, albumName, imageName)
 }
 
 // returns true if processing should continue, false otherwise.
