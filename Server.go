@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/CAFxX/httpcompression"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -57,8 +58,10 @@ func (this *Server) Run() {
 	}
 
 	// set up HTTP handlers
+	compress, _ := httpcompression.DefaultAdapter()
+
 	http.HandleFunc("/", this.serveIndex)
-	http.HandleFunc("/a/", this.serveAlbum)
+	http.Handle("/a/", compress(http.HandlerFunc(this.serveAlbum)))
 	http.HandleFunc("/find/", this.serveFind)
 	http.HandleFunc("/direct/", this.serveDirect)
 
