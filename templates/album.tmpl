@@ -13,7 +13,7 @@
         <ul>
 		{{ range .Content.ServableImages }}
             <li>
-                <a href="/original/{{ .OriginalPath }}" target="_blank" rel="noopener noreferrer">
+                <a href="/original/{{ .OriginalPath }}" target="_blank" rel="noopener noreferrer" title="{{ .Description }}">
                     <img src="/{{ .ThumbPath }}" />
                 </a>
             </li>

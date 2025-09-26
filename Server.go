@@ -37,6 +37,7 @@ type albumRenderRequest struct {
 type servableImage struct {
 	ThumbPath    string
 	OriginalPath string
+	Description  string
 }
 
 func (this *Server) Run() {
@@ -58,6 +59,7 @@ func (this *Server) Run() {
 	http.HandleFunc("/", this.serveIndex)
 	http.HandleFunc("/a/", this.serveAlbum)
 	http.HandleFunc("/find/", this.serveFind)
+	http.HandleFunc("/direct/", this.serveDirect)
 
 	http.HandleFunc("/thumbs/", this.serveThumb)
 	http.HandleFunc("/original/", this.serveOriginal)
@@ -136,6 +138,16 @@ func (this *Server) serveFind(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(albumName))
 }
+func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
+
+	incoming := r.URL.Path[len("/direct/"):]
+	if incoming == "" {
+		http.Error(w, "No album name given", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: render direct template with image + description.
+}
 
 func (this *Server) serveThumb(w http.ResponseWriter, r *http.Request) {
 	thumbPath := "." + r.URL.Path
@@ -177,9 +189,19 @@ func (this *Server) findServableImages(albumName string) ([]servableImage, error
 				return servableImages, err
 			}
 		}
+
+		// if there's a .txt file with the same name, read it for description
+		description := ""
+		descPath := fmt.Sprintf("%s/%s/%s.txt", this.AlbumPath, albumName, item.Name())
+		descBytes, err := os.ReadFile(descPath)
+		if err == nil {
+			description = string(descBytes)
+		}
+
 		servableImages = append(servableImages, servableImage{
 			ThumbPath:    thumbPath,
 			OriginalPath: fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, item.Name()),
+			Description:  description,
 		})
 	}
 
