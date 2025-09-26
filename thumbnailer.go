@@ -40,8 +40,25 @@ func (this *thumbnailer) Run() {
 		thumbPath := this.deriveThumbPath(req.albumName, req.imageName)
 
 		// thumb path exists?
-		_, err := os.Stat(thumbPath)
-		if os.IsNotExist(err) {
+
+		st, err := os.Stat(thumbPath)
+		thumbNeedsGeneration := os.IsNotExist(err)
+
+		if !thumbNeedsGeneration {
+			// thumb exists, but is it stale?
+			originalPath := fmt.Sprintf("%s/%s/%s", this.AlbumPath, req.albumName, req.imageName)
+			ost, err := os.Stat(originalPath)
+			if err != nil {
+				msg := fmt.Sprintf("Error reading original image file for resizing: %v", err)
+				req.outError <- errors.New(msg)
+				return
+			}
+			if ost.ModTime().After(st.ModTime()) {
+				thumbNeedsGeneration = true
+			}
+		}
+
+		if thumbNeedsGeneration {
 			_, err := this.createThumbnail(req.albumName, req.imageName)
 			if err != nil {
 				req.outError <- err
