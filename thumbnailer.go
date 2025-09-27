@@ -51,7 +51,7 @@ func (this *thumbnailer) Run() {
 			if err != nil {
 				msg := fmt.Sprintf("Error reading original image file for resizing: %v", err)
 				req.outError <- errors.New(msg)
-				return
+				continue
 			}
 			if ost.ModTime().After(st.ModTime()) {
 				thumbNeedsGeneration = true
@@ -62,7 +62,7 @@ func (this *thumbnailer) Run() {
 			_, err := this.createThumbnail(req.albumName, req.imageName)
 			if err != nil {
 				req.outError <- err
-				return
+				continue
 			}
 		}
 

@@ -45,7 +45,11 @@ func (this *Server) Run() {
 	this.templateChan = make(chan *templateRequest)
 
 	this.thumbnailer = newThumbnailer(this.AlbumPath, this.ThumbPath)
-	go this.thumbnailer.Run()
+
+	// start four thumbnailers to speed things up
+	for i := 0; i < 4; i++ {
+		go this.thumbnailer.Run()
+	}
 
 	go runTemplater("./templates", this.templateChan)
 
