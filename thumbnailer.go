@@ -29,7 +29,7 @@ func newThumbnailer(albumPath string, thumbPath string) *thumbnailer {
 	t := &thumbnailer{
 		AlbumPath:     albumPath,
 		ThumbPath:     thumbPath,
-		thumbRequests: make(chan *thumbRequest),
+		thumbRequests: make(chan *thumbRequest, 512),
 	}
 	return t
 }
