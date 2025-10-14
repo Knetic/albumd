@@ -8,6 +8,7 @@ import (
 	_ "image/png"  // for image.Decode
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/CAFxX/httpcompression"
@@ -39,6 +40,16 @@ type servableImage struct {
 	Description  string
 }
 
+type directRenderRequest struct {
+	AlbumName       string
+	HashedAlbumName string
+	ImageName       string
+	ImagePath       string
+	Description     string
+	PrevImage       string
+	NextImage       string
+}
+
 func (this *Server) Run() {
 
 	this.albumHashes = make(map[string]string)
@@ -68,6 +79,7 @@ func (this *Server) Run() {
 	http.Handle("/a/", compress(http.HandlerFunc(this.serveAlbum)))
 	http.HandleFunc("/find/", this.serveFind)
 	http.HandleFunc("/direct/", this.serveDirect)
+	http.HandleFunc("/traverse/", this.serveTraverse)
 
 	http.HandleFunc("/thumbs/", this.serveThumb)
 	http.HandleFunc("/original/", this.serveOriginal)
@@ -159,7 +171,160 @@ func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: render direct template with image + description.
+	// Parse the URL path: /direct/<hashedAlbumName>/<imageName>
+	parts := strings.SplitN(incoming, "/", 2)
+	if len(parts) != 2 {
+		http.Error(w, "Invalid path format", http.StatusBadRequest)
+		return
+	}
+
+	hashedAlbumName := parts[0]
+	imageName := parts[1]
+
+	// Find the actual album name
+	albumName, err, ok := this.findHashedAlbumName(hashedAlbumName)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error finding album: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Album not found", http.StatusNotFound)
+		return
+	}
+
+	// Verify the image exists
+	imagePath := fmt.Sprintf("%s/%s/%s", this.AlbumPath, albumName, imageName)
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	}
+
+	// Get all images in the album (sorted lexicographically)
+	albumImages, err := this.getAlbumImages(albumName)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error reading album: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Find current image index and determine prev/next
+	var currentIndex = -1
+	for i, img := range albumImages {
+		if img == imageName {
+			currentIndex = i
+			break
+		}
+	}
+
+	if currentIndex == -1 {
+		http.Error(w, "Image not found in album", http.StatusNotFound)
+		return
+	}
+
+	var templateReq directRenderRequest
+	templateReq.ImageName = imageName
+	templateReq.ImagePath = fmt.Sprintf("%s/%s", hashedAlbumName, imageName)
+	templateReq.HashedAlbumName = hashedAlbumName
+
+	// Set prev/next images
+	if currentIndex > 0 {
+		templateReq.PrevImage = albumImages[currentIndex-1]
+	}
+	if currentIndex < len(albumImages)-1 {
+		templateReq.NextImage = albumImages[currentIndex+1]
+	}
+
+	// Read description if available
+	descPath := fmt.Sprintf("%s/%s/%s.txt", this.AlbumPath, albumName, imageName)
+	descBytes, err := os.ReadFile(descPath)
+	if err == nil {
+		templateReq.Description = string(descBytes)
+	}
+
+	// Find the desired plaintext name of the album
+	nameBytes, err := os.ReadFile(fmt.Sprintf("%s/%s/.name", this.AlbumPath, albumName))
+	if err == nil {
+		templateReq.AlbumName = string(nameBytes)
+	}
+
+	// Render
+	req := &templateRequest{
+		templateName: TMPL_DIRECT,
+		content:      templateReq,
+		out:          w,
+		done:         make(chan error),
+	}
+	renderHTTPTemplate(req, this.templateChan)
+}
+
+func (this *Server) serveTraverse(w http.ResponseWriter, r *http.Request) {
+
+	incoming := r.URL.Path[len("/traverse/"):]
+	if incoming == "" {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	// Parse the URL path: /traverse/<hashedAlbumName>/<currentImageName>/prev (or /next)
+	parts := strings.SplitN(incoming, "/", 3)
+	if len(parts) != 3 {
+		http.Error(w, "Invalid path format", http.StatusBadRequest)
+		return
+	}
+
+	hashedAlbumName := parts[0]
+	currentImageName := parts[1]
+	direction := parts[2]
+
+	if direction != "prev" && direction != "next" {
+		http.Error(w, "Invalid direction, must be 'prev' or 'next'", http.StatusBadRequest)
+		return
+	}
+
+	// Find the actual album name
+	albumName, err, ok := this.findHashedAlbumName(hashedAlbumName)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error finding album: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Album not found", http.StatusNotFound)
+		return
+	}
+
+	// Get all images in the album (sorted lexicographically)
+	albumImages, err := this.getAlbumImages(albumName)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error reading album: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Find current image index
+	var currentIndex = -1
+	for i, img := range albumImages {
+		if img == currentImageName {
+			currentIndex = i
+			break
+		}
+	}
+
+	if currentIndex == -1 {
+		http.Error(w, "Current image not found in album", http.StatusNotFound)
+		return
+	}
+
+	// Determine target image based on direction
+	var targetImage string
+	if direction == "prev" && currentIndex > 0 {
+		targetImage = albumImages[currentIndex-1]
+	} else if direction == "next" && currentIndex < len(albumImages)-1 {
+		targetImage = albumImages[currentIndex+1]
+	} else {
+		http.Error(w, "No image in that direction", http.StatusNotFound)
+		return
+	}
+
+	// Redirect to the direct page for the target image
+	http.Redirect(w, r, fmt.Sprintf("/direct/%s/%s", hashedAlbumName, targetImage), http.StatusSeeOther)
 }
 
 func (this *Server) serveThumb(w http.ResponseWriter, r *http.Request) {
@@ -255,6 +420,31 @@ func (this Server) isImageFile(name string) bool {
 	return strings.HasSuffix(name, ".jpg") ||
 		strings.HasSuffix(name, ".jpeg") ||
 		strings.HasSuffix(name, ".png")
+}
+
+// getAlbumImages returns a sorted list of image filenames in the album
+func (this *Server) getAlbumImages(albumName string) ([]string, error) {
+	var images []string
+
+	albumItems, err := os.ReadDir(fmt.Sprintf("%s/%s", this.AlbumPath, albumName))
+	if err != nil {
+		return images, err
+	}
+
+	for _, item := range albumItems {
+		if item.IsDir() {
+			continue
+		}
+		if !this.isImageFile(item.Name()) {
+			continue
+		}
+		images = append(images, item.Name())
+	}
+
+	// Sort images lexicographically for consistent navigation
+	sort.Strings(images)
+
+	return images, nil
 }
 
 // returns true if processing should continue, false otherwise.

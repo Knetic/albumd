@@ -87,3 +87,62 @@ ul li img {
     object-position: center;
     object-fit: contain;
 }
+
+/* Direct page styles */
+.direct-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2vh;
+}
+
+.direct-image {
+    max-width: 95vw;
+    max-height: 70vh;
+    margin-bottom: 2vh;
+}
+
+.direct-image img {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+.direct-description {
+    text-align: center;
+    margin-bottom: 2vh;
+    padding: 1em;
+    max-width: 800px;
+    white-space: pre-wrap;
+}
+
+.direct-navigation {
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-button {
+    padding: 0.75em 1.5em;
+    background-color: #e8e8e8;
+    color: #333333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-family: Futura, Helvetica, sans-serif;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #dddddd;
+}
+
+.nav-button-disabled {
+    padding: 0.75em 1.5em;
+    background-color: #f5f5f5;
+    color: #aaaaaa;
+    border-radius: 4px;
+    font-family: Futura, Helvetica, sans-serif;
+    font-weight: bold;
+}
