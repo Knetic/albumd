@@ -8,6 +8,7 @@ import (
 	_ "image/png"  // for image.Decode
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/CAFxX/httpcompression"
@@ -439,6 +440,9 @@ func (this *Server) getAlbumImages(albumName string) ([]string, error) {
 		}
 		images = append(images, item.Name())
 	}
+
+	// Sort images lexicographically for consistent navigation
+	sort.Strings(images)
 
 	return images, nil
 }
