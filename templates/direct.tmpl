@@ -39,5 +39,58 @@
                 {{ end }}
             </div>
         </div>
+        
+        <script>
+        // Keyboard navigation (arrow keys)
+        document.addEventListener('keydown', function(event) {
+            // Left arrow key
+            if (event.keyCode === 37 || event.key === 'ArrowLeft') {
+                {{ if .Content.PrevImage }}
+                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                {{ end }}
+                event.preventDefault();
+            }
+            // Right arrow key
+            else if (event.keyCode === 39 || event.key === 'ArrowRight') {
+                {{ if .Content.NextImage }}
+                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                {{ end }}
+                event.preventDefault();
+            }
+        });
+        
+        // Touch gesture support (swipe left/right)
+        (function() {
+            var touchStartX = 0;
+            var touchEndX = 0;
+            var minSwipeDistance = 50; // minimum distance for a swipe in pixels
+            
+            document.addEventListener('touchstart', function(event) {
+                touchStartX = event.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', function(event) {
+                touchEndX = event.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                var swipeDistance = touchEndX - touchStartX;
+                
+                // Swipe right (shows previous image)
+                if (swipeDistance > minSwipeDistance) {
+                    {{ if .Content.PrevImage }}
+                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                    {{ end }}
+                }
+                // Swipe left (shows next image)
+                else if (swipeDistance < -minSwipeDistance) {
+                    {{ if .Content.NextImage }}
+                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                    {{ end }}
+                }
+            }
+        })();
+        </script>
     </body>
 </html>
