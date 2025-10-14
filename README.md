@@ -14,7 +14,7 @@ version: '2'
 
 services:
   albumd:
-    image: knetic/albumd:v1.2025-10-14
+    image: knetic/albumd:v1.2025-10-15
     container_name: albumd
     restart: unless-stopped
     environment:
