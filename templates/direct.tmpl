@@ -46,16 +46,16 @@
             // Left arrow key
             if (event.keyCode === 37 || event.key === 'ArrowLeft') {
                 {{ if .Content.PrevImage }}
+                event.preventDefault();
                 window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
                 {{ end }}
-                event.preventDefault();
             }
             // Right arrow key
             else if (event.keyCode === 39 || event.key === 'ArrowRight') {
                 {{ if .Content.NextImage }}
+                event.preventDefault();
                 window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
                 {{ end }}
-                event.preventDefault();
             }
         });
         
@@ -66,12 +66,16 @@
             var minSwipeDistance = 50; // minimum distance for a swipe in pixels
             
             document.addEventListener('touchstart', function(event) {
-                touchStartX = event.changedTouches[0].screenX;
+                if (event.changedTouches && event.changedTouches[0]) {
+                    touchStartX = event.changedTouches[0].screenX;
+                }
             }, false);
             
             document.addEventListener('touchend', function(event) {
-                touchEndX = event.changedTouches[0].screenX;
-                handleSwipe();
+                if (event.changedTouches && event.changedTouches[0]) {
+                    touchEndX = event.changedTouches[0].screenX;
+                    handleSwipe();
+                }
             }, false);
             
             function handleSwipe() {
