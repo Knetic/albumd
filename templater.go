@@ -23,14 +23,16 @@ type siteContent struct {
 
 const TMPL_INDEX = "index.tmpl"
 const TMPL_ALBUM = "album.tmpl"
+const TMPL_DIRECT = "direct.tmpl"
 
 func runTemplater(templatePath string, in chan *templateRequest) {
 
 	defer close(in)
 
 	templates := map[string]*template.Template{
-		TMPL_INDEX: template.Must(template.ParseFiles(filepath.Join(templatePath, "index.tmpl"))),
-		TMPL_ALBUM: template.Must(template.ParseFiles(filepath.Join(templatePath, "album.tmpl"))),
+		TMPL_INDEX:  template.Must(template.ParseFiles(filepath.Join(templatePath, "index.tmpl"))),
+		TMPL_ALBUM:  template.Must(template.ParseFiles(filepath.Join(templatePath, "album.tmpl"))),
+		TMPL_DIRECT: template.Must(template.ParseFiles(filepath.Join(templatePath, "direct.tmpl"))),
 	}
 
 	stylesheetRaw, err := ioutil.ReadFile(filepath.Join(templatePath, "style.css"))
