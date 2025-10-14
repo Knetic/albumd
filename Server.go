@@ -79,7 +79,6 @@ func (this *Server) Run() {
 	http.Handle("/a/", compress(http.HandlerFunc(this.serveAlbum)))
 	http.HandleFunc("/find/", this.serveFind)
 	http.HandleFunc("/direct/", this.serveDirect)
-	http.HandleFunc("/traverse/", this.serveTraverse)
 
 	http.HandleFunc("/thumbs/", this.serveThumb)
 	http.HandleFunc("/original/", this.serveOriginal)
@@ -254,77 +253,6 @@ func (this *Server) serveDirect(w http.ResponseWriter, r *http.Request) {
 		done:         make(chan error),
 	}
 	renderHTTPTemplate(req, this.templateChan)
-}
-
-func (this *Server) serveTraverse(w http.ResponseWriter, r *http.Request) {
-
-	incoming := r.URL.Path[len("/traverse/"):]
-	if incoming == "" {
-		http.Error(w, "Invalid path", http.StatusBadRequest)
-		return
-	}
-
-	// Parse the URL path: /traverse/<hashedAlbumName>/<currentImageName>/prev (or /next)
-	parts := strings.SplitN(incoming, "/", 3)
-	if len(parts) != 3 {
-		http.Error(w, "Invalid path format", http.StatusBadRequest)
-		return
-	}
-
-	hashedAlbumName := parts[0]
-	currentImageName := parts[1]
-	direction := parts[2]
-
-	if direction != "prev" && direction != "next" {
-		http.Error(w, "Invalid direction, must be 'prev' or 'next'", http.StatusBadRequest)
-		return
-	}
-
-	// Find the actual album name
-	albumName, err, ok := this.findHashedAlbumName(hashedAlbumName)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error finding album: %v", err), http.StatusInternalServerError)
-		return
-	}
-	if !ok {
-		http.Error(w, "Album not found", http.StatusNotFound)
-		return
-	}
-
-	// Get all images in the album (sorted lexicographically)
-	albumImages, err := this.getAlbumImages(albumName)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error reading album: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Find current image index
-	var currentIndex = -1
-	for i, img := range albumImages {
-		if img == currentImageName {
-			currentIndex = i
-			break
-		}
-	}
-
-	if currentIndex == -1 {
-		http.Error(w, "Current image not found in album", http.StatusNotFound)
-		return
-	}
-
-	// Determine target image based on direction
-	var targetImage string
-	if direction == "prev" && currentIndex > 0 {
-		targetImage = albumImages[currentIndex-1]
-	} else if direction == "next" && currentIndex < len(albumImages)-1 {
-		targetImage = albumImages[currentIndex+1]
-	} else {
-		http.Error(w, "No image in that direction", http.StatusNotFound)
-		return
-	}
-
-	// Redirect to the direct page for the target image
-	http.Redirect(w, r, fmt.Sprintf("/direct/%s/%s", hashedAlbumName, targetImage), http.StatusSeeOther)
 }
 
 func (this *Server) serveThumb(w http.ResponseWriter, r *http.Request) {

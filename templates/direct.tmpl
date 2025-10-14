@@ -25,7 +25,7 @@
             
             <div class="direct-navigation">
                 {{ if .Content.PrevImage }}
-                <a href="/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev" class="nav-button">← Previous</a>
+                <a href="/direct/{{ .Content.HashedAlbumName }}/{{ .Content.PrevImage }}" class="nav-button">← Previous</a>
                 {{ else }}
                 <span class="nav-button-disabled">← Previous</span>
                 {{ end }}
@@ -33,7 +33,7 @@
                 <a href="/a/{{ .Content.HashedAlbumName }}" class="nav-button">Back to Album</a>
                 
                 {{ if .Content.NextImage }}
-                <a href="/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next" class="nav-button">Next →</a>
+                <a href="/direct/{{ .Content.HashedAlbumName }}/{{ .Content.NextImage }}" class="nav-button">Next →</a>
                 {{ else }}
                 <span class="nav-button-disabled">Next →</span>
                 {{ end }}
