@@ -14,7 +14,7 @@ version: '2'
 
 services:
   albumd:
-    image: knetic/albumd:v1.2025-09-26
+    image: knetic/albumd:v1.2025-10-14
     container_name: albumd
     restart: unless-stopped
     environment:
@@ -32,3 +32,20 @@ Each directory under `/usr/share/albumd` is treated as an album.
 Album names (directory names) are hashed and salted with scrypt, using the `ALBUMD_SALT`. This makes brute-forcing valid album names expensive, so that bad actors can't find any album they don't have a link to.
 
 However, this means that you also don't know the link. You have to request the endpoint `/find/<albumName>` to be redirected to the public link. The endpoint requires basic auth, with the `ALBUMD_USERNAME` / `ALBUMD_PASSWORD` as creds.
+
+## Titling
+
+At the root level of an album directory, any `.name` file will be read as a text file, and will be used as the header text of the album.
+If that file doesn't exist, the name of the album directory is used. But it's recommended to have a friendly title, since the hashed album name comes from the directory name.
+
+Similarly, any individual picture can have a description.
+
+```
+albums
+|-- 1990-05-06_someAlbum
+|------ .name          // <--- the contents of this are the title of the album
+|------ image0.png
+|------ image0.png.txt // <--- the contents of this are the description for image0
+|------ image1.png     // <--- no description for these
+|------ image2.png
+```
