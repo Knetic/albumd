@@ -39,5 +39,67 @@
                 {{ end }}
             </div>
         </div>
+        
+        <script>
+        // Keyboard navigation (arrow keys)
+        document.addEventListener('keydown', function(event) {
+            // Left arrow key
+            if (event.keyCode === 37 || event.key === 'ArrowLeft') {
+                {{ if .Content.PrevImage }}
+                event.preventDefault();
+                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                {{ end }}
+            }
+            // Right arrow key
+            else if (event.keyCode === 39 || event.key === 'ArrowRight') {
+                {{ if .Content.NextImage }}
+                event.preventDefault();
+                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                {{ end }}
+            }
+        });
+        
+        // Touch gesture support (swipe left/right)
+        (function() {
+            var touchStartX = null;
+            var touchEndX = null;
+            var minSwipeDistance = 50; // minimum distance for a swipe in pixels
+            
+            document.addEventListener('touchstart', function(event) {
+                if (event.changedTouches && event.changedTouches[0]) {
+                    touchStartX = event.changedTouches[0].screenX;
+                }
+            }, false);
+            
+            document.addEventListener('touchend', function(event) {
+                if (event.changedTouches && event.changedTouches[0]) {
+                    touchEndX = event.changedTouches[0].screenX;
+                    handleSwipe();
+                }
+            }, false);
+            
+            function handleSwipe() {
+                // Only handle swipe if we have both start and end positions
+                if (touchStartX === null || touchEndX === null) {
+                    return;
+                }
+                
+                var swipeDistance = touchEndX - touchStartX;
+                
+                // Swipe right (shows previous image)
+                if (swipeDistance > minSwipeDistance) {
+                    {{ if .Content.PrevImage }}
+                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                    {{ end }}
+                }
+                // Swipe left (shows next image)
+                else if (swipeDistance < -minSwipeDistance) {
+                    {{ if .Content.NextImage }}
+                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                    {{ end }}
+                }
+            }
+        })();
+        </script>
     </body>
 </html>
