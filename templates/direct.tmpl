@@ -61,8 +61,8 @@
         
         // Touch gesture support (swipe left/right)
         (function() {
-            var touchStartX = 0;
-            var touchEndX = 0;
+            var touchStartX = null;
+            var touchEndX = null;
             var minSwipeDistance = 50; // minimum distance for a swipe in pixels
             
             document.addEventListener('touchstart', function(event) {
@@ -79,6 +79,11 @@
             }, false);
             
             function handleSwipe() {
+                // Only handle swipe if we have both start and end positions
+                if (touchStartX === null || touchEndX === null) {
+                    return;
+                }
+                
                 var swipeDistance = touchEndX - touchStartX;
                 
                 // Swipe right (shows previous image)
