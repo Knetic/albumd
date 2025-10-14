@@ -47,14 +47,14 @@
             if (event.keyCode === 37 || event.key === 'ArrowLeft') {
                 {{ if .Content.PrevImage }}
                 event.preventDefault();
-                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                window.location.href = '/direct/{{ .Content.HashedAlbumName }}/{{ .Content.PrevImage }}';
                 {{ end }}
             }
             // Right arrow key
             else if (event.keyCode === 39 || event.key === 'ArrowRight') {
                 {{ if .Content.NextImage }}
                 event.preventDefault();
-                window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                window.location.href = '/direct/{{ .Content.HashedAlbumName }}/{{ .Content.NextImage }}';
                 {{ end }}
             }
         });
@@ -89,13 +89,13 @@
                 // Swipe right (shows previous image)
                 if (swipeDistance > minSwipeDistance) {
                     {{ if .Content.PrevImage }}
-                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/prev';
+                    window.location.href = '/direct/{{ .Content.HashedAlbumName }}/{{ .Content.PrevImage }}';
                     {{ end }}
                 }
                 // Swipe left (shows next image)
                 else if (swipeDistance < -minSwipeDistance) {
                     {{ if .Content.NextImage }}
-                    window.location.href = '/traverse/{{ .Content.HashedAlbumName }}/{{ .Content.ImageName }}/next';
+                    window.location.href = '/direct/{{ .Content.HashedAlbumName }}/{{ .Content.NextImage }}';
                     {{ end }}
                 }
             }
