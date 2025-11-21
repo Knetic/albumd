@@ -1,7 +1,7 @@
 # Builder stage
 FROM golang:1.24-alpine AS builder
 
-WORKDIR /build
+WORKDIR /srv/build
 
 # Copy go mod files and vendor directory
 COPY go.mod go.sum ./
@@ -24,7 +24,7 @@ VOLUME /usr/share/albumd
 EXPOSE 8080
 
 # Copy only the binary and templates from builder
-COPY --from=builder /build/albumd /usr/local/bin/albumd
-COPY --from=builder /build/templates /var/lib/albumd/templates
+COPY --from=builder /srv/build/albumd /usr/local/bin/albumd
+COPY --from=builder /srv/build/templates /var/lib/albumd/templates
 
 CMD ["/usr/local/bin/albumd", "-path", "/usr/share/albumd", "-thumbs", "/usr/share/albumd/thumbs"]
